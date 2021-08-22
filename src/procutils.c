@@ -7,6 +7,7 @@
 #include "utils.h"
 
 #define PTRACE_ERROR -1
+#define WAITPID_ERROR -1
 
 void attach_process(pid_t pid)
 {
@@ -29,17 +30,28 @@ void resume_process(pid_t pid)
         fatal_error("resume_process");
 }
 
+
 void resume_process_singlestep(pid_t pid)
 {
     if(ptrace(PTRACE_SINGLESTEP, pid, NULL, NULL) == PTRACE_ERROR)
         fatal_error("resume_process_singlestep (ptrace)");
 
     int status_result;
-    if(waitpid(pid, &status_result, WUNTRACED) == -1)
+    if(waitpid(pid, &status_result, WUNTRACED) == WAITPID_ERROR)
         fatal_error("resume_process_singlestep (waitpid)");
 
     if(!WIFSTOPPED(status_result) || WSTOPSIG(status_result) != SIGTRAP)
-        fatal_error("resume_process_singlestep (process hasn't stopped or signal is not SIGTRAP");
+        fatal_error("resume_process_singlestep (process hasn't stopped or signal is not SIGTRAP)");
+}
+
+void handle_sigtrap(pid_t pid)
+{
+    int status_result;
+    if(waitpid(pid, &status_result, WUNTRACED) == WAITPID_ERROR)
+        fatal_error("handle_sigtrap (waitpid)");
+
+    if(!WIFSTOPPED(status_result) || WSTOPSIG(status_result) != SIGTRAP)
+        fatal_error("handle_sigtrap (process hasn't stopped or signal is not SIGTRAP)");
 }
 
 void get_registers(pid_t pid, registers_t* save)

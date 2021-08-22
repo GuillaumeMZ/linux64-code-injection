@@ -10,6 +10,8 @@ void detach_process(pid_t pid);
 void resume_process(pid_t pid);
 void resume_process_singlestep(pid_t pid); //for debugging the injector
 
+void handle_sigtrap(pid_t pid);
+
 void get_registers(pid_t pid, registers_t* save);
 void set_registers(pid_t pid, const registers_t* registers);
 
@@ -30,6 +32,7 @@ void write_memory(pid_t pid, void* address, const uint64_t* buffer, size_t words
         une fois le shellcode terminé, remettre le processus en pause //int 3 dans le shellcode
         sortir le sigtrap
         restaurer les registres //ptrace(PTRACE_SETREGS, pid, NULL, sauvegarde);
+        restaurer la mémoire écrite
         se détacher du process //ptrace(PTRACE_DETACH, pid, NULL, NULL);
         vérifier que la bibliothèque a été injectée (script)
         mettre /proc/sys/kernel/yama/ptrace_scope à 2 (script)
