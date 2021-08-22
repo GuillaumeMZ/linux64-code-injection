@@ -31,6 +31,7 @@ void write_memory(pid_t pid, void* address, const uint64_t* buffer, size_t words
         reprendre l'execution du processus pour executer le shellcode //ptrace(PTRACE_CONT, pid, NULL, NULL);
         une fois le shellcode terminé, remettre le processus en pause //int 3 dans le shellcode
         sortir le sigtrap
+        récupérer rax, qui contient le handle de la bibliothèque injectée (pourra être utilisé pour dlclose)
         restaurer les registres //ptrace(PTRACE_SETREGS, pid, NULL, sauvegarde);
         restaurer la mémoire écrite
         se détacher du process //ptrace(PTRACE_DETACH, pid, NULL, NULL);
