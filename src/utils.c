@@ -5,5 +5,5 @@
 void fatal_error(const char* name)
 {
     perror(name);
-    exit(1);
+    exit(EXIT_FAILURE);
 }

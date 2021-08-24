@@ -4,8 +4,8 @@
 
 int main(void)
 {
-    printf("pid: %d\n", getpid());
-    puts("injectez moi !");
+    printf("My pid is: %d\n", getpid());
+    puts("Try to inject me if you can ! Press a key to terminate me...");
     getchar();
     return 0;
 }

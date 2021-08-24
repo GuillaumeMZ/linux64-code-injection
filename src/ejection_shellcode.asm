@@ -1,6 +1,6 @@
 global ejection_shellcode_begin
 
-;this shellcode should be 8 bytes long
+;this shellcode is 8 bytes long
 
 section .text
 ejection_shellcode_begin:

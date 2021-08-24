@@ -6,3 +6,6 @@ injection_shellcode:
 
 ejection_shellcode:
 	nasm -felf64 ./src/ejection_shellcode.asm -o ./bin/ejection_shellcode.o
+
+clean:
+	rm -f ./bin/*.o ./bin/injector
