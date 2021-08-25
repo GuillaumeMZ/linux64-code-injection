@@ -57,7 +57,7 @@ int main(int argc, char **argv)
     pid_t target_pid = atoi(argv[1]);
     dlopen_address = strtoul(argv[2], NULL, 16);
     dlclose_address = strtoul(argv[3], NULL, 16);
-    const char* library_path = "/home/guillaume/Documents/lib.so";
+    const char* library_path = "/home/guillaume/Documents/GitHub/Linux64-code-injection/misc/multithreaded_test_so/threaded_lib.so";
     executable_memory_zone = strtoul(argv[5], NULL, 16);
 
     shellcode_t shellcode = create_injection_shellcode(library_path);
