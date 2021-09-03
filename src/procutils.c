@@ -2,6 +2,7 @@
 #include <sys/wait.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "procutils.h"
 #include "utils.h"
@@ -37,7 +38,10 @@ void handle_sigtrap(pid_t pid)
         fatal_error("handle_sigtrap (waitpid)");
 
     if(!WIFSTOPPED(status_result) || WSTOPSIG(status_result) != SIGTRAP)
-        fatal_error("handle_sigtrap (process hasn't stopped or signal is not SIGTRAP)");
+    {
+        printf("handle_sigtrap failed: WIFSTOPPED(status_result) is %d and WSTOPSIG(status_result) is %d\n", WIFSTOPPED(status_result),WSTOPSIG(status_result));
+        exit(1);
+    }
 }
 
 void get_registers(pid_t pid, registers_t* save)
