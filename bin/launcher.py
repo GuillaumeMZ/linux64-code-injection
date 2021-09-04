@@ -18,14 +18,11 @@ lib_path = str(args.lib_path.resolve())
 provider_name = args.dlfcn_provider
 check_after_injection = args.check_after_injection
 
-#todo: check the value of /proc/sys/kernel/yama/ptrace_scope or check if this script is started with privileges; create the shellcodes directly inside this script
-
-#ensuring the target and the injectable .so both exist
-
 def file_exists(file_path):
     file_info = pathlib.Path(file_path)
     return file_info.exists() and file_info.is_file()
 
+#ensuring the target and the injectable .so both exist
 assert file_exists(f'/proc/{pid}/maps'), 'The target process doesn\'t exist !'
 assert file_exists(lib_path), 'The injectable shared object doesn\'t exist !'
 
@@ -82,19 +79,15 @@ dlopen_absolute_addr = provider_mapping_addr + int(dlopen_offset, 16)
 dlclose_absolute_addr = provider_mapping_addr + int(dlclose_offset, 16)
 
 #Finding a memory zone with execution permission so we can write shellcodes there
-def find_executable_memory_zone(mappings):
-    return get_mapped_zone_address(find_mapped_zone_if(mappings, lambda s : 'r-xp' in s))
-
-executable_memzone = find_executable_memory_zone(mappings)
+executable_memzone = get_mapped_zone_address(find_mapped_zone_if(mappings, lambda s : 'r-xp' in s))
 
 #calling the injector
 subprocess.run(['./injector', str(pid), str(hex(dlopen_absolute_addr)), str(hex(dlclose_absolute_addr)), lib_path, str(hex(executable_memzone))])
-
-#assert that the injected library is loaded (optional)
 
 def is_library_loaded(pid, library_name):
     with open(f'/proc/{pid}/maps', 'r') as proc_maps:
         return any(library_name in line for line in proc_maps)
 
+#assert that the injected library is loaded (optional)
 if check_after_injection:
     assert is_library_loaded(pid, lib_path), f'{lib_path} isn\'t loaded inside process {pid}.'
