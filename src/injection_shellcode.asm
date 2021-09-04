@@ -14,7 +14,8 @@ injection_shellcode_begin:
 
 shellcode_payload:
     pop rdi ;load our string address inside rdi (first argument)
-    mov rsi, 2 ; RTLD_NOW (second argument)
+    xor rsi, rsi
+    add sil, 2 ; RTLD_NOW (second argument)
     call rbx ;we are assuming that dlopen address will be stored inside rbx when this shellcode will be called.
 
     int 3 ;will raise SIGTRAP to notify the injector that the library is loaded
