@@ -19,7 +19,7 @@ pub fn assemble_injection_shellcode(dl_path: &CStr, dlopen_address: u64) -> anyh
     assembler.set_label(&mut path_beginning)?;
     assembler.db(dl_path.to_bytes_with_nul())?; //write the path inside the shellcode
 
-    Ok(assembler.assemble(0)?)
+    Ok(pad_shellcode(&assembler.assemble(0)?))
 }
 
 pub fn assemble_ejection_shellcode(dl_handle: u64, dlclose_address: u64) -> anyhow::Result<Vec<u8>> {
@@ -34,5 +34,11 @@ pub fn assemble_ejection_shellcode(dl_handle: u64, dlclose_address: u64) -> anyh
 
     assembler.int3()?;
 
-    Ok(assembler.assemble(0)?)
+    Ok(pad_shellcode(&assembler.assemble(0)?))
+}
+
+fn pad_shellcode(shellcode: &Vec<u8>) -> Vec<u8> {
+    let padding_bytes_count = 8 - (shellcode.len() % 8);
+    
+    [shellcode.as_slice(), &[0u8].repeat(padding_bytes_count)].concat() //unclear one-liner
 }
