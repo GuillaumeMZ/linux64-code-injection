@@ -1,0 +1,9 @@
+[package]
+name = "linux64-code-injection"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.86"
+iced-x86 = { version = "1.21.0", features = ["code_asm"] }
+nix = { version = "0.29.0", features = ["process", "ptrace"] }

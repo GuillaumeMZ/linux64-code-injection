@@ -1,3 +1,2 @@
-.idea/
-.xmake/
-build/
+# Added by cargo
+/target
