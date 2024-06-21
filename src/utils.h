@@ -1,1 +1,0 @@
-void fatal_error(const char* name);
