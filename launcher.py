@@ -67,8 +67,8 @@ def get_function_offset(readelf_output, function_name):
 
     assert False, f'Function {function_name} wasn\'t found.'
 
-dlopen_func_name = 'dlopen' if provider_name == 'libdl' else '__libc_dlopen_mode'
-dlclose_func_name = 'dlclose' if provider_name == 'libdl' else '__libc_dlclose'
+dlopen_func_name = 'dlopen' #if provider_name == 'libdl' else '__libc_dlopen_mode'
+dlclose_func_name = 'dlclose' #if provider_name == 'libdl' else '__libc_dlclose'
 
 #getting dlopen and dlclose (or libc_dlopen_mode and libc_dlclose) offsets
 dlopen_offset = get_function_offset(readelf_output, dlopen_func_name)
@@ -80,6 +80,8 @@ dlclose_absolute_addr = provider_mapping_addr + int(dlclose_offset, 16)
 
 #Finding a memory zone with execution permission so we can write shellcodes there
 executable_memzone = get_mapped_zone_address(find_mapped_zone_if(mappings, lambda s : 'r-xp' in s))
+
+input(f"{str(pid)}, {str(hex(dlopen_absolute_addr))}, {str(hex(dlclose_absolute_addr))}, {str(hex(executable_memzone))}")
 
 #calling the injector
 subprocess.run(['./injector', str(pid), str(hex(dlopen_absolute_addr)), str(hex(dlclose_absolute_addr)), lib_path, str(hex(executable_memzone))])
