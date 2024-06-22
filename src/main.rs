@@ -12,10 +12,10 @@ fn main() -> anyhow::Result<()> {
     let args: Vec<String> = std::env::args().collect();
 
     let target = Pid::from_raw(args[1].parse()?);
-    let dlopen_address = u64::from_str_radix(&args[2], 16)?;
-    //let dlclose_address = u64::from_str_radix(&args[3], 16)?;
+    let dlopen_address = args[2].parse()?;
+    //let dlclose_address = args[3].parse()?;
     let dl_path = CString::new(&*args[4])?;
-    let r#where = u64::from_str_radix(&args[5], 16)?;
+    let r#where = args[5].parse()?;
 
     let injection_shellcode = shellcodes::assemble_injection_shellcode(&dl_path, dlopen_address)?;
     injector::inject_and_run_shellcode(&injection_shellcode, target, r#where)?;
