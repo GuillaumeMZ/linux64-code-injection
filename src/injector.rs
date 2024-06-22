@@ -7,7 +7,13 @@ use nix::sys::{ptrace, wait};
 use nix::sys::wait::{WaitPidFlag, WaitStatus};
 use nix::unistd::Pid;
 
+use crate::shellcodes::NOPS_COUNT;
+
 pub fn inject_and_run_shellcode(shellcode: &[u8], who: Pid, r#where: u64) -> anyhow::Result<user_regs_struct> {
+    //TODO: check that the shellcode:
+    //- contains NOPS_COUNT nops at its beginning
+    //- its size is a multiple of 8
+    
     ptrace::attach(who)?;
     wait::waitpid(who, Some(WaitPidFlag::WUNTRACED))?; //TODO: is WUNTRACED useful here ?
 
@@ -16,7 +22,7 @@ pub fn inject_and_run_shellcode(shellcode: &[u8], who: Pid, r#where: u64) -> any
 
     //prepare the new registers, so that rip points to the start of our shellcode and rsp is aligned to 16 bytes
     let registers = user_regs_struct { 
-        rip: r#where, //set the start point of the shellcode
+        rip: r#where + NOPS_COUNT as u64, //set the start point to the end of the nops
         rsp: old_rsp - old_rsp % 16, //aligning rsp to 16 bytes to follow System-V ABI 
         ..registers_backup 
     };

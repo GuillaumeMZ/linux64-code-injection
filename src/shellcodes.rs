@@ -1,6 +1,8 @@
 use std::ffi::CStr;
 
-use iced_x86::code_asm::{ptr, rdi, rsi, rbx, CodeAssembler};
+use iced_x86::code_asm::{rdi, rsi, rbx, CodeAssembler};
+
+pub const NOPS_COUNT: usize = 5;
 
 pub fn assemble_injection_shellcode(dl_path: &CStr, dlopen_address: u64) -> anyhow::Result<Vec<u8>> {
     let mut assembler = CodeAssembler::new(64)?;
@@ -8,7 +10,7 @@ pub fn assemble_injection_shellcode(dl_path: &CStr, dlopen_address: u64) -> anyh
     let mut shellcode_payload = assembler.create_label();
     let mut load_path_address = assembler.create_label();
 
-    for _ in 0..5 {
+    for _ in 0..NOPS_COUNT {
         assembler.nop()?;
     }
     assembler.jmp(load_path_address)?;
@@ -32,7 +34,7 @@ pub fn assemble_injection_shellcode(dl_path: &CStr, dlopen_address: u64) -> anyh
 pub fn assemble_ejection_shellcode(dl_handle: u64, dlclose_address: u64) -> anyhow::Result<Vec<u8>> {
     let mut assembler = CodeAssembler::new(64)?;
 
-    for _ in 0..5 {
+    for _ in 0..NOPS_COUNT {
         assembler.nop()?;
     }
 
