@@ -81,10 +81,8 @@ dlclose_absolute_addr = provider_mapping_addr + int(dlclose_offset, 16)
 #Finding a memory zone with execution permission so we can write shellcodes there
 executable_memzone = get_mapped_zone_address(find_mapped_zone_if(mappings, lambda s : 'r-xp' in s))
 
-input(f"{str(pid)}, {str(hex(dlopen_absolute_addr))}, {str(hex(dlclose_absolute_addr))}, {str(hex(executable_memzone))}")
-
 #calling the injector
-subprocess.run(['./injector', str(pid), str(hex(dlopen_absolute_addr)), str(hex(dlclose_absolute_addr)), lib_path, str(hex(executable_memzone))])
+subprocess.run(['./injector', str(pid), str(dlopen_absolute_addr), str(dlclose_absolute_addr), lib_path, str(executable_memzone)])
 
 def is_library_loaded(pid, library_name):
     with open(f'/proc/{pid}/maps', 'r') as proc_maps:
