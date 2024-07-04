@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use anyhow::Context;
 use nix::unistd::Pid;
 use once_cell::sync::Lazy;
 use regex::Regex;
@@ -22,13 +23,15 @@ pub struct ProcessMapSection {
     pub device_major:  u8,
     pub device_minor:  u8,
     pub inode:         u64,
-    pub name:          String, //ignore unnamed mappings
+    pub name:          String, //we ignore unnamed mappings: this is why this is not an option<string>
 }
  
 pub type ProcessMapSections = HashMap<String, Vec<ProcessMapSection>>;
 
-pub fn get_loaded_dl_maps(pid: Pid) -> Result<ProcessMapSections, std::io::Error> {
-    let raw_contents = std::fs::read_to_string(format!("/proc/{}/maps", pid.as_raw()))?;
+pub fn get_loaded_dl_maps(pid: Pid) -> anyhow::Result<ProcessMapSections> {
+    let mappings_path = &format!("/proc/{}/maps", pid.as_raw());
+    let raw_contents = std::fs::read_to_string(mappings_path)
+        .context(format!("Error: could not open {}. Are you sure {} is a valid process id ?", mappings_path, pid.as_raw()))?;
  
     Ok(raw_contents
         .lines()
@@ -45,13 +48,14 @@ static MAPPING_REGEX: Lazy<Regex> = Lazy::new(|| {
     let hex = "[0-9a-f]+";
     let regex = format!(r"({hex})-({hex}) (r|-)(w|-)(x|-)(p|s) ({hex}) (\d+):(\d+) (\d+)\s+(.+\.so.*)");
 
-    Regex::new(&regex).unwrap()
+    Regex::new(&regex).unwrap() //shouldn't fail
 });
 
 fn parse_proc_maps_line(line: &str) -> Option<ProcessMapSection> {
+    //None of the following unwrap()s can fail, because the regex already did the validation job
     MAPPING_REGEX
         .captures(line)
-        .map(|c| c.extract::<11>())
+        .map(|c| c.extract::<11>()) //11 attributes in the ProcessMapSection struct
         .map(|(_, groups)| ProcessMapSection {
             start_address: u64::from_str_radix(groups[0], 16).unwrap(),
             end_address:   u64::from_str_radix(groups[1], 16).unwrap(),

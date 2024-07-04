@@ -1,18 +1,56 @@
 use std::path::Path;
 
-use anyhow::anyhow;
+use anyhow::{anyhow, Context};
 use elf::{endian::LittleEndian, ElfStream};
 
-pub fn find_function(dl_path: &Path, function_name: &str) -> anyhow::Result<Option<u64>> {
-    let elf_file = std::fs::File::open(dl_path)?;
-    let mut elf: ElfStream<LittleEndian, _> = ElfStream::open_stream(elf_file)?;
+pub fn find_function(dl_path: &Path, function_name: &String) -> anyhow::Result<Option<u64>> {
+    let dl_path_str = dl_path.to_string_lossy();
+
+    let elf_file = std::fs::File::open(dl_path).context(format!(
+        concat!(
+            "Error while trying to find the {} function in {}:",
+            "could not open {}. Are you sure it exists ?"
+        ),
+        function_name, 
+        dl_path_str, 
+        dl_path_str
+    ))?;
+
+    let mut elf: ElfStream<LittleEndian, _> = ElfStream::open_stream(elf_file).context(format!(
+        concat!(
+            "Error while trying to find the {} function in {}:",
+            "failed to parse {}. Are you sure it is a valid ELF64 shared library ?"
+        ),
+        function_name,
+        dl_path_str,
+        dl_path_str
+    ))?;
 
     let Ok(Some((dynsym, dynstr))) = elf.dynamic_symbol_table() else {
-        return Err(anyhow!("Error while trying to read {}: could not get the DYNSYM section.", dl_path.to_string_lossy()));
+        return Err(anyhow!(
+            concat!(
+                "Error while trying to find the {} function in {}:",
+                "could not get the DYNSYM section.",
+                "Are you sure that {} is a dynamic library ?"
+            ),
+            function_name,
+            dl_path_str,
+            dl_path_str
+        ));
     };
 
     for symbol in dynsym {
-        let symbol_name = dynstr.get(symbol.st_name as usize)?;
+        let symbol_name = dynstr.get(symbol.st_name as usize).context(format!(
+            concat!(
+                "Error while trying to find the {} function in {}:",
+                "failed to parse an entry of the dynsym section.",
+                "Are you sure that {} is not corrupted ?"
+            ),
+            function_name,
+            dl_path_str,
+            dl_path_str
+        ))?;
+
         if symbol_name == function_name && symbol.st_symtype() == elf::abi::STT_FUNC && !symbol.is_undefined() {
             return Ok(Some(symbol.st_value));
         }
