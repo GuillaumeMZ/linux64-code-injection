@@ -9,6 +9,7 @@ use nix::unistd::Pid;
 
 use crate::shellcodes::NOPS_COUNT;
 
+//TODO: don't return the registers once the ejection shellcode is patched
 pub fn inject_and_run_shellcode(shellcode: &[u8], who: Pid, r#where: u64) -> anyhow::Result<user_regs_struct> {
     //TODO: check that the shellcode:
     //- contains NOPS_COUNT nops at its beginning

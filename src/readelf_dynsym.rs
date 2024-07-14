@@ -3,7 +3,9 @@ use std::path::Path;
 use anyhow::{anyhow, Context};
 use elf::{endian::LittleEndian, ElfStream};
 
-pub fn find_function(dl_path: &Path, function_name: &String) -> anyhow::Result<u64> {
+/// Returns the offset the function_name function inside the library dl_path if it exists.
+/// Add the offset to the library's base address to get the absolute address.
+pub fn get_fn_offset(dl_path: &Path, function_name: &String) -> anyhow::Result<u64> {
     let dl_path_str = dl_path.to_string_lossy();
 
     let elf_file = std::fs::File::open(dl_path).context(format!(
