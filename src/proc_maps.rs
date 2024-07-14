@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
 use anyhow::Context;
+use lazy_static::lazy_static;
 use nix::unistd::Pid;
-use once_cell::sync::Lazy;
 use regex::Regex;
  
 #[derive(Clone, Debug)]
@@ -44,12 +44,14 @@ pub fn get_loaded_dl_maps(pid: Pid) -> anyhow::Result<ProcessMapSections> {
     )
 }
 
-static MAPPING_REGEX: Lazy<Regex> = Lazy::new(|| {
-    let hex = "[0-9a-f]+";
-    let regex = format!(r"({hex})-({hex}) (r|-)(w|-)(x|-)(p|s) ({hex}) (\d+):(\d+) (\d+)\s+(.+\.so.*)");
+lazy_static! {
+    static ref MAPPING_REGEX: Regex = {
+        let hex = "[0-9a-f]+";
+        let regex = format!(r"({hex})-({hex}) (r|-)(w|-)(x|-)(p|s) ({hex}) (\d+):(\d+) (\d+)\s+(.+\.so.*)");
 
-    Regex::new(&regex).unwrap() //shouldn't fail
-});
+        Regex::new(&regex).unwrap() //shouldn't fail
+    };
+}
 
 fn parse_proc_maps_line(line: &str) -> Option<ProcessMapSection> {
     //None of the following unwrap()s can fail, because the regex already did the validation job
