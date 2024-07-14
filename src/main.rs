@@ -31,6 +31,7 @@ fn parse_pid(arg: &str) -> Result<Pid, std::num::ParseIntError> {
 
 #[derive(Subcommand)]
 enum Command {
+    /// Directly inject or eject a shared library 
     Cli {
         /// Choose between injection and ejection
         #[arg(short, long, value_enum)]
